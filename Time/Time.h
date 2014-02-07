@@ -8,12 +8,29 @@
 */     
 
 #ifndef _Time_h
+#ifdef __cplusplus
 #define _Time_h
 
 #include <inttypes.h>
+#ifndef __AVR__
+#include <sys/types.h> // for __time_t_defined, but avr libc lacks sys/types.h
+#endif
 
+
+#if !defined(__time_t_defined) // avoid conflict with newlib or other posix libc
 typedef unsigned long time_t;
+#endif
 
+
+// This ugly hack allows us to define C++ overloaded functions, when included
+// from within an extern "C", as newlib's sys/stat.h does.  Actually it is
+// intended to include "time.h" from the C library (on ARM, but AVR does not
+// have that file at all).  On Mac and Windows, the compiler will find this
+// "Time.h" instead of the C library "time.h", so we may cause other weird
+// and unpredictable effects by conflicting with the C library header "time.h",
+// but at least this hack lets us define C++ functions as intended.  Hopefully
+// nothing too terrible will result from overriding the C library header?!
+extern "C++" {
 typedef enum {timeNotSet, timeNeedsSync, timeSet
 }  timeStatus_t ;
 
@@ -89,16 +106,22 @@ uint8_t isPM();            // returns true if time now is PM
 uint8_t isPM(time_t t);    // returns true the given time is PM
 int     minute();          // the minute now 
 int     minute(time_t t);  // the minute for the given time
-int     second();          // the second now 
+int     second();          // the second now
 int     second(time_t t);  // the second for the given time
 int     day();             // the day now 
 int     day(time_t t);     // the day for the given time
 int     weekday();         // the weekday now (Sunday is day 1) 
-int     weekday(time_t t); // the weekday for the given time 
+int     weekday(time_t t); // the weekday for the given time (string)
+char*   weekdayStr();         // the weekday now (string)
+char*   weekdayStr(time_t t); // the weekday for the given time 
+char*   weekdayStrLong();
+char*   weekdayStrLong(time_t t);
 int     month();           // the month now  (Jan is month 1)
 int     month(time_t t);   // the month for the given time
 int     year();            // the full four digit year: (2009, 2010 etc) 
 int     year(time_t t);    // the year for the given time
+char*   meridian();        // the current meridian of the clock (AM/PM)
+char*   meridian(time_t t); //the current meridian of a given time (AM/PM)
 
 time_t now();              // return the current time as seconds since Jan 1 1970 
 void    setTime(time_t t);
@@ -121,6 +144,7 @@ void    setSyncInterval(time_t interval); // set the number of seconds between r
 void breakTime(time_t time, tmElements_t &tm);  // break time_t into elements
 time_t makeTime(tmElements_t &tm);  // convert time elements into time_t
 
-
+} // extern "C++"
+#endif // __cplusplus
 #endif /* _Time_h */
 
