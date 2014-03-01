@@ -158,16 +158,16 @@ int year(time_t t) { // the year for the given time
   return tmYearToCalendar(tm.Year);
 }
 
-char* meridian() {  // as in Processing, the full four digit year: (2009, 2010 etc) 
+char* meridian() {  // the meridian of the time
   return meridian(now()); 
 }
 
-char* meridian(time_t t) { // the year for the given time
+char* meridian(time_t t) { // meridian
   refreshCache(t);
   if (isPM())
-    return "AM";
-  else
     return "PM";
+  else
+    return "AM";
 }
 
 
